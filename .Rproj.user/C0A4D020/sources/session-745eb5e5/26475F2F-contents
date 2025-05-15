@@ -1,0 +1,44 @@
+---
+title: "Penguin Analysis"
+format: html
+editor: visual
+---
+
+## Penguin analysis
+
+In this quarto document we have the code for the penguin analysis
+
+```{r}
+# load the tidyverse
+library(tidyverse)
+library(readxl)
+
+```
+
+```{r}
+# Source functions
+
+library(readxl)
+# Read the clean dataset
+data <- read_excel("..input/data.xlsx", na = "NA")
+
+source(file="functions.R")
+
+# Summary
+summary(data)
+
+```
+
+```{r}
+# Calculating mean bill length for different species and islands using dplyr
+data %>%
+  filter(species == "Adelie") %>%
+  group_by(island) %>%
+  summarize(mean_bill_length = round(mean(bill_length_mm, na.rm = TRUE), 2))
+
+
+```
+
+\`\`\`{# Use the function in functions.R} create_scatterplot(data, "Adelie", "Torgersen")
+
+\`\`\`

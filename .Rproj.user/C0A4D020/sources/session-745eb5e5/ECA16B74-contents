@@ -1,0 +1,132 @@
+---
+title: "Exploring the Simpson's Paradox with the Penguin dataset" 
+format: html
+author: 
+  name: "Dr Aswin Pradeep Tachambalath"
+email: pradeepaswin13@gmail.com
+date: today
+css: style.css
+code-fold: true
+code-summary: "Show the code"
+fig-cap-location: margin
+toc: true
+toc-location: left
+toc-title: " "
+number-sections: true
+description: "This document is a first step towards a stunning Quarto document "
+title-block-banner: "seashell"
+title-block-banner-color: "forestgreen"
+editor: visual
+---
+
+::: {.callout-caution collapse="true"}
+## A few consideration about this doc
+
+This document serves as a practice note prepared while following the productive-r-workflow online course.
+:::
+
+# Introduction
+
+This document provides a simple analysis of the renowned Penguin dataset. It's part of the [productive r-workflow](https://www.productive-r-workflow.com/) online course.
+
+Details of the penguin dataset is provided [here](https://allisonhorst.github.io/palmerpenguins/).
+
+First,let's load libraries
+
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(patchwork) 
+library(DT)            
+library(knitr) 
+library(hrbrthemes)
+library(plotly)
+```
+
+![Bill measurement representation](asset/culmen_depth.png){width="300"}
+
+# Loading data
+
+load the clean version, together with a few functions available in `functions.R`.
+
+```{r}
+# Source functions
+source(file="functions.R")
+
+# Read the clean dataset
+data <- readRDS(file = "C:/Users/aswin/Desktop/productive-r-workflow/input/clean_data.rds")
+
+```
+
+The original data is shown below. R package `DT` has been used to showcase the given table below.
+
+```{r}
+datatable(data, options = list(pageLength = 5), filter = "top")
+```
+
+# Bill Length and Bill Depth
+
+Some descriptive analysis with the data.
+
+```{r, fig.align = "center", fig.width=5, fig.height=5, warning=FALSE, fig.cap="Relationship between bill <b>length</b> and bill <b>depth</b>. <b>All</b> data points included."}
+p <- data %>%
+  ggplot(
+    aes(x = bill_length_mm, y = bill_depth_mm)
+  ) +
+    geom_point(color="#69b3a2") +
+    labs(
+      x = "Bill Length (mm)",
+      y = "Bill Depth (mm)",
+      title = paste("Surprising relationship?")
+    ) + 
+  theme_ipsum()
+ggplotly(p)
+```
+
+The average of a variable can be computed as follow:
+
+$${\displaystyle Avg={\frac {1}{n}}\sum _{i=1}^{n}a_{i}={\frac {a_{1}+a_{2}+\cdots +a_{n}}{n}}}$$
+
+`bill length` and `bill depth` averages are summarized in the 2 tables below.
+
+# Descriptive analysis
+
+```{r}
+#| layout-ncol: 2
+
+bill_length_per_specie <- data %>%
+ group_by(species) %>% 
+  summarise(average_bill_length = mean(bill_length_mm, na.rm = TRUE))
+
+kable(bill_length_per_specie)
+
+bill_depth_per_specie <- data %>%
+ group_by(species) %>% 
+  summarise(average_bill_depth = mean(bill_depth_mm, na.rm = TRUE))
+
+kable(bill_depth_per_specie)
+
+bill_length_adelie <- bill_length_per_specie %>%
+  filter(species == "Adelie") %>%
+  pull(average_bill_length) %>%
+  round(2)
+```
+
+For example, the average bill length for the species `Adelie` is `r bill_length_adelie`.
+
+# create scatterplot
+
+Use the function in `functions.R` to explore relations between bill depth and bill length for the species **Adelie** on the island **Torgersen**.
+
+::: {.callout-important collapse="true"}
+recheck the `functions.R` file in your folder and compare it with the file provided by Yan
+:::
+
+```{r, warning=FALSE, fig.height=3, fig.width=9, fig.cap="There is actually a **positive correlation** when split by **species**."}
+
+# Use the function in functions.R
+p1 <- create_scatterplot(data, "Adelie", "#6689c6")
+p2 <- create_scatterplot(data, "Chinstrap", "#e85252")
+p3 <- create_scatterplot(data, "Gentoo", "#9a6fb0")
+
+p1 + p2 + p3
+```
